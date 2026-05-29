@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import CameraView from '../camera/CameraView'
 import { useCamera } from '../../hooks/useCamera'
 
@@ -9,7 +9,6 @@ interface Props {
 }
 
 export default function RetakeCamera({ shotIndex, onRetake, onCancel }: Props) {
-  const [confirmed, setConfirmed] = useState(false)
 
   const {
     photos,
