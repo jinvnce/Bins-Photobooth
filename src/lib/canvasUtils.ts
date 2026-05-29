@@ -44,8 +44,9 @@ export async function compositePhotoStrip(
   filterStyle: FilterStyle = 'none',
   shareUrl?: string
 ): Promise<Blob> {
-  const count = photos.length
-  const orientation = sessionStorage.getItem('photo_orientation') ?? '2x2'
+const layout = Number(sessionStorage.getItem('photo_layout')) || photos.length
+const count = layout
+const orientation = sessionStorage.getItem('photo_orientation') ?? '2x2'
 
   let cols: number
   let rows: number
