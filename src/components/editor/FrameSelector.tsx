@@ -8,6 +8,9 @@ interface FrameSelectorProps {
 const FRAME_IMAGES: Partial<Record<FrameStyle, string>> = {
   classic: '/frames/05.22.26.png',
   pastel: '/frames/tryframe.png',
+  film: "/frames/one.png",
+  vintage: "/frames/two.png",
+  neon: "/frames/three.png",
 }
 
 const FRAMES: { id: FrameStyle; label: string; emoji: string; desc: string; color: string }[] = [

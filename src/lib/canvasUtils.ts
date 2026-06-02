@@ -11,9 +11,9 @@ export const BG_COLORS: Record<BgColor, string> = {
 export const FRAME_PATHS: Record<FrameStyle, string | null> = {
   classic: "/frames/05.22.26.png",
   pastel: "/frames/tryframe.png",
-  film: null,
-  vintage: null,
-  neon: null,
+  film: "/frames/one.png",
+  vintage: "/frames/two.png",
+  neon: "/frames/three.png",
   minimal: null,
 };
 
