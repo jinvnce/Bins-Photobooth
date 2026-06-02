@@ -20,6 +20,23 @@ const FRAMES: { id: FrameStyle; label: string; emoji: string; desc: string; colo
 ]
 
 function FramePlaceholder({ color, emoji }: { color: string; emoji: string }) {
+  // Read the user's chosen layout
+  const photoLayout = Number(sessionStorage.getItem('photo_layout')) || 4
+  const orientation = sessionStorage.getItem('photo_orientation') ?? '2x2'
+
+  let cols: number
+  let rows: number
+
+  if (photoLayout === 1) { cols = 1; rows = 1 }
+  else if (orientation === '1x2') { cols = 1; rows = 2 }
+  else if (orientation === '2x1') { cols = 2; rows = 1 }
+  else if (orientation === '1x4') { cols = 1; rows = 4 }
+  else if (orientation === '2x2') { cols = 2; rows = 2 }
+  else if (photoLayout === 6)  { cols = 2; rows = 3 }
+  else if (photoLayout === 8)  { cols = 2; rows = 4 }
+  else if (photoLayout === 10) { cols = 2; rows = 5 }
+  else { cols = 2; rows = Math.ceil(photoLayout / 2) }
+
   return (
     <div
       style={{
@@ -27,11 +44,11 @@ function FramePlaceholder({ color, emoji }: { color: string; emoji: string }) {
         aspectRatio: '3 / 4',
         background: color,
         borderRadius: '6px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '6px 4px',
+        display: 'grid',
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, 1fr)`,
+        gap: '3px',
+        padding: '6px',
         border: '2px solid rgba(0,0,0,0.08)',
         boxSizing: 'border-box',
         position: 'relative',
@@ -39,15 +56,13 @@ function FramePlaceholder({ color, emoji }: { color: string; emoji: string }) {
         pointerEvents: 'none',
       }}
     >
-      {[0, 1, 2].map(i => (
+      {Array.from({ length: photoLayout }).map((_, i) => (
         <div
           key={i}
           style={{
-            width: '85%',
-            flex: 1,
-            background: 'rgba(0,0,0,0.08)',
+            background: 'rgba(0,0,0,0.10)',
             borderRadius: '3px',
-            margin: '2px 0',
+            minHeight: 0,
           }}
         />
       ))}

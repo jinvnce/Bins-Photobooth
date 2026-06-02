@@ -82,6 +82,7 @@ const handleStart = async () => {
   setLoading(true)
   const actualShots = getActualShotCount(selected)
   sessionStorage.setItem('photo_count', String(actualShots))
+    sessionStorage.setItem('photo_layout', String(selected))   // ← ADD THIS
   sessionStorage.setItem('photo_orientation', orientation)
 
   await supabase

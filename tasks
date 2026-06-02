@@ -1,14 +1,13 @@
 -no need for log in na basta gumamit or maglagay lang ng email - done
 -select designs and frames tapos dapat kapag sa strip naka-auto adjust na siya then may boxes na rin for that - 
--add qr sa mga strip, footer banda or after ng transaction na yun para ma-scan nila tapos need din i-store para ma-send sa email nila
+-add qr sa mga strip, footer banda or after ng transaction na yun para ma-scan nila tapos need din i-store para ma-send sa email nila - done
 -magbago ang frame depende sa design na napili
--remove na yung remove bg, then sa bg color remove na rin since dependent siya sa frame if black, black
+-remove na yung remove bg, then sa bg color remove na rin since dependent siya sa frame if black, black - done
 -use vintage, korean styles para sa photobooth
--add ng page para sa mga save photobooth pics tapos send sa email
--maging 10 shots siya, tapos kapag may babaguhin or aalisin, dapat yung part lang na yun
--tanggalin na yung preview, focus na lang sa pagkuha and pasok sa frame
--sa gallery or preview part, doon gagawin if may retake sa part lang na yun then balik ulit
--after okay, prompt thr qr code
+-add ng page para sa mga save photobooth pics tapos send sa email - done
+-maging 10 shots siya, tapos kapag may babaguhin or aalisin, dapat yung part lang na yun - done
+-sa gallery or preview part, doon gagawin if may retake sa part lang na yun then balik ulit - done
+-after okay, prompt thr qr code - done
 -finish
 
 

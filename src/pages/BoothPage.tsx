@@ -54,8 +54,7 @@ export default function BoothPage() {
           </div>
         </div>
 
-        {/* Full-width single column, no sidebar */}
-        <div className="booth-content" style={{ gridTemplateColumns: '1fr', maxWidth: '100%' }}>
+        <div className="booth-content" style={{ gridTemplateColumns: '1fr', maxWidth: '100%', display: 'flex', justifyContent: 'center' }}>
           <CameraView
             onCapture={addPhoto}
             photoCount={photoCount}

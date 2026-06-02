@@ -240,10 +240,10 @@ body {
   border-radius: 18px;
   overflow: hidden;
   background: #000;
-  aspect-ratio: 16/7;   /* wide and short — change to 16/9 for taller */
+  aspect-ratio: 4/3;   /* wide and short — change to 16/9 for taller */
   border: 1.5px solid rgba(74, 143, 255, 0.25);
   width: 100%;
-  max-width: 100%;       /* removed the 580px cap */
+  max-width: 100%;       
   box-shadow:
     0 0 0 1px rgba(74,143,255,0.08),
     0 8px 40px rgba(0,0,0,0.7),
@@ -320,6 +320,10 @@ body {
     0 2px 16px rgba(74, 143, 255, 0.45),
     inset 0 1px 0 rgba(255,255,255,0.15);
   transition: all 0.2s;
+    display: flex;
+  align-items: center;
+  gap: 8px;
+
 }
 .btn-capture:hover:not(:disabled) {
   transform: translateY(-2px) scale(1.03);
@@ -673,7 +677,7 @@ body {
 }
 .camera-dropdown-icon { font-size: 1.1rem; flex-shrink: 0; margin-right: 8px; }
 .camera-dropdown {
-  flex: 1; border: none; outline: none; background: transparent;
+  flex: 1; border: none; outline: none; background:  var(--surface-2);
   font-size: 0.9rem; color: var(--text); font-family: var(--font-body);
   cursor: pointer; appearance: none; -webkit-appearance: none; padding-right: 1.5rem;
 }
