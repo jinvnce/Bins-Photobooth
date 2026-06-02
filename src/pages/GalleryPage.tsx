@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/ui/Navbar'
 import BgRemover from '../components/editor/BgRemover'
-import ColorPicker from '../components/editor/ColorPicker'
 import FrameSelector from '../components/editor/FrameSelector'
 import FilterSelector from '../components/editor/FilterSelector'
 import Canvas from '../components/editor/Canvas'
@@ -31,7 +30,6 @@ export default function EditorPage() {
     frameStyle,
     setFrameStyle,
     bgColor,
-    setBgColor,
     filterStyle,
     setFilterStyle,
     sessionId,
@@ -101,9 +99,6 @@ export default function EditorPage() {
           <div className="editor-panel">
             {step === 'bg' && (
               <BgRemover photos={photos} onComplete={handleBgDone} />
-            )}
-            {step === 'color' && (
-              <ColorPicker selected={bgColor} onChange={setBgColor} />
             )}
             {step === 'frame' && (
               <FrameSelector selected={frameStyle} onChange={setFrameStyle} />

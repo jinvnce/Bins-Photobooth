@@ -83,7 +83,7 @@ export async function compositePhotoStrip(
     CELL_W = 400;
     CELL_H = 280;
     PADDING = 18;
-    FOOTER_H = 64; // ← was 0, footer now visible for pastel too
+    FOOTER_H = 64;
   } else if (orientation === "2x1") {
     CELL_W = 220;
     CELL_H = 280;

@@ -68,13 +68,11 @@ export default function EditorPage() {
     [localPhotos, setPhotos],
   );
 
-  // Tap to select (adds one occurrence) or deselect (removes last occurrence).
-  // Works even when the strip is full — tapping a selected photo always frees a slot.
+
   const handleToggleSelect = (i: number) => {
     setSelectedIndices((prev) => {
       const isSelected = prev.includes(i);
       if (isSelected) {
-        // Remove the last occurrence of this index
         const lastPos = [...prev]
           .map((x, pos) => ({ x, pos }))
           .reverse()
@@ -83,7 +81,7 @@ export default function EditorPage() {
         return prev.filter((_, j) => j !== lastPos);
       } else {
         if (prev.length < slotsNeeded) return [...prev, i];
-        return prev; // strip is full, do nothing
+        return prev; 
       }
     });
   };
@@ -164,7 +162,6 @@ export default function EditorPage() {
 
         <div className="editor-content">
           <div className="editor-panel">
-            {/* ── SHOTS TAB ── */}
             {step === "shots" &&
               (retakingIndex !== null ? (
                 <RetakeCamera
