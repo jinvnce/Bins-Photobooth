@@ -1,18 +1,10 @@
 export type BgColor = 'blue' | 'red' | 'brown'
 export type FrameStyle = 'classic' | 'pastel' | 'film' | 'vintage' | 'neon' | 'minimal'
 export type FilterStyle =
-  | 'none'
-  | 'vintage'
-  | 'noir'
-  | 'fade'
-  | 'warm'
-  | 'cool'
-  | 'vivid'
-  | 'dreamy'
-  | 'lomo'
-  | 'polaroid'
-  | 'y2k'
-  | 'disposable'
+  | 'none' | 'vintage' | 'noir' | 'fade' | 'warm' | 'cool'
+  | 'vivid' | 'dreamy' | 'lomo' | 'polaroid' | 'y2k' | 'disposable'
+  | 'sunset' | 'mint' | 'dusk' | 'golden' | 'cinema' | 'neon'
+  | 'pastel' | 'chrome' | 'matte' | 'infrared' | 'velvet' | 'kodak' | 'oldvintage'
 export type SessionStatus = 'active' | 'complete' | 'expired'
 
 export interface User {

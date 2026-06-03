@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/ui/Navbar'
-import BgRemover from '../components/editor/BgRemover'
 import FrameSelector from '../components/editor/FrameSelector'
 import FilterSelector from '../components/editor/FilterSelector'
 import Canvas from '../components/editor/Canvas'
@@ -26,7 +25,6 @@ export default function EditorPage() {
   const {
     photos,
     processedPhotos,
-    setProcessedPhotos,
     frameStyle,
     setFrameStyle,
     bgColor,
@@ -39,11 +37,6 @@ export default function EditorPage() {
   const [step, setStep] = useState<Step>('bg')
   const [finalBlob, setFinalBlob] = useState<Blob | null>(null)
   const [saving, setSaving] = useState(false)
-
-  const handleBgDone = (processed: string[]) => {
-    setProcessedPhotos(processed)
-    setStep('color')
-  }
 
   const handleCanvasReady = useCallback((blob: Blob) => {
     setFinalBlob(blob)
@@ -97,9 +90,6 @@ export default function EditorPage() {
 
         <div className="editor-content">
           <div className="editor-panel">
-            {step === 'bg' && (
-              <BgRemover photos={photos} onComplete={handleBgDone} />
-            )}
             {step === 'frame' && (
               <FrameSelector selected={frameStyle} onChange={setFrameStyle} />
             )}

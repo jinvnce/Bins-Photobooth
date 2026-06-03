@@ -47,13 +47,25 @@ export default function EditorPage() {
   const photoLayout =
     Number(sessionStorage.getItem("photo_layout")) || localPhotos.length;
 
+  type StripMode = "mirrored" | "independent";
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-  const displayPhotos = useMemo(
-    () => selectedIndices.map((i) => localPhotos[i]),
-    [selectedIndices, localPhotos],
-  );
-  const slotsNeeded = photoLayout;
+  const isDuplex = [6, 8, 10].includes(photoLayout);
+  const [stripMode, setStripMode] = useState<StripMode>("mirrored");
+  const slotsNeeded =
+    isDuplex && stripMode === "mirrored" ? photoLayout / 2 : photoLayout;
   const slotsLeft = slotsNeeded - selectedIndices.length;
+
+  const displayPhotos = useMemo(() => {
+    const picked = selectedIndices.map((i) => localPhotos[i]);
+    if (
+      isDuplex &&
+      stripMode === "mirrored" &&
+      picked.length === photoLayout / 2
+    ) {
+      return [...picked, ...picked];
+    }
+    return picked;
+  }, [selectedIndices, localPhotos, isDuplex, stripMode, photoLayout]);
 
   const handleRetake = useCallback(
     (index: number, newDataUrl: string) => {
@@ -68,21 +80,20 @@ export default function EditorPage() {
     [localPhotos, setPhotos],
   );
 
-
   const handleToggleSelect = (i: number) => {
     setSelectedIndices((prev) => {
-      const isSelected = prev.includes(i);
-      if (isSelected) {
-        const lastPos = [...prev]
-          .map((x, pos) => ({ x, pos }))
-          .reverse()
-          .find(({ x }) => x === i)?.pos ?? -1;
-        if (lastPos === -1) return prev;
-        return prev.filter((_, j) => j !== lastPos);
-      } else {
-        if (prev.length < slotsNeeded) return [...prev, i];
-        return prev; 
+      if (prev.length < slotsNeeded) {
+        return [...prev, i];
       }
+      if (prev.includes(i)) {
+        const lastOccurrenceIndex =
+          [...prev]
+            .map((x, pos) => ({ x, pos }))
+            .reverse()
+            .find(({ x }) => x === i)?.pos ?? -1;
+        return prev.filter((_, j) => j !== lastOccurrenceIndex);
+      }
+      return prev;
     });
   };
 
@@ -223,7 +234,38 @@ export default function EditorPage() {
                       </button>
                     )}
                   </div>
-
+                  {isDuplex && (
+                    <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                      {(["mirrored", "independent"] as StripMode[]).map(
+                        (mode) => (
+                          <button
+                            key={mode}
+                            onClick={() => {
+                              setStripMode(mode);
+                              sessionStorage.setItem("strip_mode", mode);
+                              setSelectedIndices([]); // reset selection when switching
+                            }}
+                            style={{
+                              padding: "4px 12px",
+                              borderRadius: 6,
+                              border: "1px solid var(--accent)",
+                              background:
+                                stripMode === mode
+                                  ? "var(--accent)"
+                                  : "transparent",
+                              color:
+                                stripMode === mode ? "#fff" : "var(--accent)",
+                              fontSize: "0.7rem",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {mode}
+                          </button>
+                        ),
+                      )}
+                    </div>
+                  )}
                   <div className="shots-retake-grid">
                     {localPhotos.map((src, i) => {
                       const isSelected = selectedIndices.includes(i);
@@ -310,7 +352,56 @@ export default function EditorPage() {
                               </span>
                             )}
                           </button>
-
+                          {isSelected && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedIndices((prev) => {
+                                  const lastOccurrenceIndex =
+                                    [...prev]
+                                      .map((x, pos) => ({ x, pos }))
+                                      .reverse()
+                                      .find(({ x }) => x === i)?.pos ?? -1;
+                                  return prev.filter(
+                                    (_, j) => j !== lastOccurrenceIndex,
+                                  );
+                                });
+                              }}
+                              title="remove this shot"
+                              style={{
+                                position: "absolute",
+                                top: "6px",
+                                left: "60px", // offset from retake button
+                                zIndex: 10,
+                                background: "rgba(255,60,60,0.8)",
+                                border: "1px solid rgba(255,255,255,0.2)",
+                                borderRadius: "6px",
+                                color: "white",
+                                fontSize: "0.65rem",
+                                padding: "2px 6px",
+                                cursor: "pointer",
+                                fontWeight: 600,
+                                letterSpacing: "0.03em",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 3,
+                              }}
+                            >
+                              <svg
+                                width="10"
+                                height="10"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                              >
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                              remove
+                            </button>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

@@ -20,7 +20,91 @@ function StripPlaceholder({
 }) {
   const layout = Number(sessionStorage.getItem("photo_layout")) || 4;
   const orientation = sessionStorage.getItem("photo_orientation") ?? "2x2";
+  const isDuplex = [6, 8, 10].includes(layout);
 
+  const cellAspect =
+    orientation === "2x1"
+      ? 280 / 220
+      : orientation === "1x4" || orientation === "1x2"
+        ? 260 / 380
+        : frameStyle === "pastel"
+          ? 280 / 400
+          : 1;
+
+  // ── Duplex: two strips side by side ──
+  if (isDuplex) {
+    const half = layout / 2;
+    const stripMode = sessionStorage.getItem("strip_mode") ?? "mirrored";
+
+    const renderStrip = (side: 0 | 1) =>
+      Array.from({ length: half }).map((_, i) => {
+        const photoIndex = side === 0 ? i : stripMode === "mirrored" ? i : i + half;
+        return (
+          <div
+            key={i}
+            style={{
+              aspectRatio: `1 / 1.2`,
+              background: "rgba(255,255,255,0.25)",
+              borderRadius: "4px",
+              border: photos[photoIndex]
+                ? "none"
+                : "1.5px dashed rgba(255,255,255,0.5)",
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "rgba(255,255,255,0.6)",
+              fontSize: "1rem",
+            }}
+          >
+            {photos[photoIndex] ? (
+              <img
+                src={photos[photoIndex]}
+                alt={`photo ${photoIndex + 1}`}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              "+"
+            )}
+          </div>
+        );
+      });
+
+    return (
+      <div className="canvas-preview">
+        <h3 className="editor-section-title">preview</h3>
+        <div
+          style={{
+            display: "flex",
+            gap: "6px",
+            padding: "12px",
+            background: "#a8c8f0",
+            borderRadius: "8px",
+            width: "100%",
+            maxWidth: "320px",
+            margin: "0 auto",
+          }}
+        >
+          {([0, 1] as (0 | 1)[]).map((side) => (
+            <div
+              key={side}
+              style={{
+                flex: 1,
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gridTemplateRows: `repeat(${half}, 1fr)`,
+                gap: "6px",
+              }}
+            >
+              {renderStrip(side)}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Normal layouts ──
   let cols: number;
   let rows: number;
 
@@ -41,17 +125,6 @@ function StripPlaceholder({
     rows = Math.ceil(layout / 2);
   }
 
-  const cellAspect =
-    orientation === "2x1"
-      ? 280 / 220
-      : orientation === "1x4" || orientation === "1x2"
-        ? 260 / 380
-        : frameStyle === "pastel"
-          ? 280 / 400
-          : 1;
-
-  const slots = Array.from({ length: layout });
-
   return (
     <div className="canvas-preview">
       <h3 className="editor-section-title">preview</h3>
@@ -69,7 +142,7 @@ function StripPlaceholder({
           margin: "0 auto",
         }}
       >
-        {slots.map((_, i) => (
+        {Array.from({ length: layout }).map((_, i) => (
           <div
             key={i}
             style={{

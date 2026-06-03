@@ -1,27 +1,29 @@
-import { useNavigate } from 'react-router-dom'
-import { saveAs } from 'file-saver'
-import { QRCodeSVG } from 'qrcode.react'
-import { useSessionStore } from '../store/sessionStore'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { saveAs } from "file-saver";
+import { QRCodeSVG } from "qrcode.react";
+import { useSessionStore } from "../store/sessionStore";
 
 export default function DownloadPage() {
-  const navigate = useNavigate()
-  const { finalStripUrl, reset } = useSessionStore()
-  const guestEmail = sessionStorage.getItem('guest_email')
-  const guestName = sessionStorage.getItem('guest_name')
+  const navigate = useNavigate();
+  const { finalStripUrl, reset } = useSessionStore();
+  const guestEmail = sessionStorage.getItem("guest_email");
+  const guestName = sessionStorage.getItem("guest_name");
+  const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const handleDownload = () => {
-    if (!finalStripUrl) return
-    saveAs(finalStripUrl, `life4cuts-${Date.now()}.png`)
-  }
+    if (!finalStripUrl) return;
+    saveAs(finalStripUrl, `life4cuts-${Date.now()}.png`);
+  };
 
   const handleNew = () => {
-    reset()
-    sessionStorage.clear()
-    navigate('/')
-  }
+    reset();
+    sessionStorage.clear();
+    navigate("/");
+  };
 
-  // QR points to the current page URL — user can scan to re-open/download on their phone
-  const qrUrl = finalStripUrl || window.location.href
+  const qrUrl = finalStripUrl || window.location.href;
 
   return (
     <div className="page-layout">
@@ -31,18 +33,47 @@ export default function DownloadPage() {
       </div>
       <main className="download-page">
         <div className="download-content">
-          <h1 className="page-title">your strip is ready!</h1>
+          <h1 className="page-title">
+            Your strip is ready, {guestName || guestEmail?.split("@")[0]}!
+          </h1>{" "}
           <p className="page-subtitle">
             we'll send a copy to <strong>{guestEmail}</strong>
           </p>
-
-          {finalStripUrl ? (
-            <img src={finalStripUrl} alt="Your final photo strip" className="download-preview" />
+          {finalStripUrl && !imgError ? (
+            <div style={{ position: "relative", minHeight: 200 }}>
+              {!imgLoaded && (
+                <p style={{ textAlign: "center", opacity: 0.5 }}>
+                  loading strip...
+                </p>
+              )}
+              <img
+                src={finalStripUrl}
+                alt="Your final photo strip"
+                className="download-preview"
+                crossOrigin="anonymous"
+                onLoad={() => setImgLoaded(true)}
+                onError={(e) => {
+                  console.error("Image failed to load:", finalStripUrl, e);
+                  setImgError(true);
+                }}
+                style={{ display: imgLoaded ? "block" : "none" }}
+              />
+            </div>
+          ) : imgError ? (
+            <div className="download-placeholder">
+              strip saved but preview failed —{" "}
+              <a
+                href={finalStripUrl!}
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: "var(--accent)" }}
+              >
+                open directly
+              </a>
+            </div>
           ) : (
             <div className="download-placeholder">no strip found</div>
           )}
-
-          {/* QR Code — scan to get the strip directly on your phone */}
           {finalStripUrl && (
             <div className="download-qr">
               <p className="download-qr-label">scan to save on your phone</p>
@@ -56,7 +87,6 @@ export default function DownloadPage() {
               />
             </div>
           )}
-
           <div className="download-actions">
             <button className="btn-primary btn-lg" onClick={handleDownload}>
               ↓ download strip
@@ -68,5 +98,5 @@ export default function DownloadPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

@@ -50,59 +50,95 @@ export async function compositePhotoStrip(
   const layout =
     Number(sessionStorage.getItem("photo_layout")) || photos.length;
   const orientation = sessionStorage.getItem("photo_orientation") ?? "2x2";
+  const stripMode = sessionStorage.getItem("strip_mode") ?? "mirrored";
 
   const displayPhotos = photos.slice(0, layout);
   const count = displayPhotos.length;
 
-  let cols: number;
-  let rows: number;
+  const isDuplex = [6, 8, 10].includes(layout) && frameStyle !== "pastel";
 
-  if (count === 1) {
-    cols = 1;
-    rows = 1;
-  } else if (frameStyle === "pastel") {
-    cols = 1;
-    rows = count;
-  } else if (orientation === "1x4" || orientation === "1x2") {
-    cols = 1;
-    rows = count;
-  } else if (orientation === "2x1") {
-    cols = count;
-    rows = 1;
-  } else {
-    cols = 2;
-    rows = Math.ceil(count / 2);
-  }
-
-  let CELL_W: number;
-  let CELL_H: number;
-  let PADDING: number;
-  let FOOTER_H: number;
+  // ── Cell / padding dimensions ──
+  let CELL_W = 300;
+  let CELL_H = 300;
+  let PADDING_X = 12;
+  let PADDING_Y = 12;
+  let FOOTER_H = 64;
 
   if (frameStyle === "pastel") {
     CELL_W = 400;
     CELL_H = 280;
-    PADDING = 18;
+    PADDING_X = 18;
+    PADDING_Y = 18;
     FOOTER_H = 64;
   } else if (orientation === "2x1") {
     CELL_W = 220;
     CELL_H = 280;
-    PADDING = 10;
+    PADDING_X = 10;
+    PADDING_Y = 10;
     FOOTER_H = 56;
   } else if (orientation === "1x4" || orientation === "1x2") {
     CELL_W = 380;
     CELL_H = 260;
-    PADDING = 12;
+    PADDING_X = 12;
+    PADDING_Y = 12;
     FOOTER_H = 64;
+  } else if (isDuplex) {
+    CELL_W = 519;
+    CELL_H = 321;
+    PADDING_X = 54;
+    PADDING_Y = 75;
+    FOOTER_H = 80;
   } else {
     CELL_W = 300;
     CELL_H = 300;
-    PADDING = 12;
+    PADDING_X = 12;
+    PADDING_Y = 12;
     FOOTER_H = 64;
   }
 
-  const STRIP_W = cols * CELL_W + (cols + 1) * PADDING;
-  const STRIP_H = rows * CELL_H + (rows + 1) * PADDING + FOOTER_H;
+  // ── Canvas dimensions ──
+  let STRIP_W: number;
+  let STRIP_H: number;
+  let cols: number;
+  let rows: number;
+
+  if (isDuplex) {
+    const half = layout / 2;
+    STRIP_W = 1200;
+    STRIP_H = 1800;
+    cols = 1;
+    rows = half;
+    CELL_W = 520;
+    CELL_H = 322;
+    PADDING_X = 75;
+    PADDING_Y = 372;
+    FOOTER_H = 0;
+  } else if (count === 1) {
+    cols = 1;
+    rows = 1;
+    STRIP_W = cols * CELL_W + (cols + 1) * PADDING_X;
+    STRIP_H = rows * CELL_H + (rows + 1) * PADDING_Y + FOOTER_H;
+  } else if (frameStyle === "pastel") {
+    cols = 1;
+    rows = count;
+    STRIP_W = cols * CELL_W + (cols + 1) * PADDING_X;
+    STRIP_H = rows * CELL_H + (rows + 1) * PADDING_Y + FOOTER_H;
+  } else if (orientation === "1x4" || orientation === "1x2") {
+    cols = 1;
+    rows = count;
+    STRIP_W = cols * CELL_W + (cols + 1) * PADDING_X;
+    STRIP_H = rows * CELL_H + (rows + 1) * PADDING_Y + FOOTER_H;
+  } else if (orientation === "2x1") {
+    cols = count;
+    rows = 1;
+    STRIP_W = cols * CELL_W + (cols + 1) * PADDING_X;
+    STRIP_H = rows * CELL_H + (rows + 1) * PADDING_Y + FOOTER_H;
+  } else {
+    cols = 2;
+    rows = Math.ceil(count / 2);
+    STRIP_W = cols * CELL_W + (cols + 1) * PADDING_X;
+    STRIP_H = rows * CELL_H + (rows + 1) * PADDING_Y + FOOTER_H;
+  }
 
   const canvas = document.createElement("canvas");
   canvas.width = STRIP_W;
@@ -114,7 +150,6 @@ export async function compositePhotoStrip(
   // ── Background ──
   if (framePath && frameStyle === "pastel") {
     try {
-      // Draw frame only over the photo area (not the footer)
       const frameImg = await loadImage(framePath);
       const photoAreaH = STRIP_H - FOOTER_H;
       ctx.drawImage(frameImg, 0, 0, STRIP_W, photoAreaH);
@@ -129,37 +164,68 @@ export async function compositePhotoStrip(
   }
 
   // ── Photos ──
-  for (let i = 0; i < displayPhotos.length; i++) {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
+  if (isDuplex) {
+    const half = layout / 2;
+    const GAP_Y = 13;
+    const RIGHT_X = 609;
 
-    const x = PADDING + col * (CELL_W + PADDING);
-    const y = PADDING + row * (CELL_H + PADDING);
+    for (let side = 0; side < 2; side++) {
+      const offsetX = side === 0 ? PADDING_X : RIGHT_X;
 
-    const photoImg = await loadImage(displayPhotos[i]);
-    const { sx, sy, sw, sh } = coverFit(
-      photoImg.naturalWidth,
-      photoImg.naturalHeight,
-      CELL_W,
-      CELL_H,
-    );
+      for (let i = 0; i < half; i++) {
+        const photoIndex =
+          stripMode === "mirrored" ? i : side === 0 ? i : i + half;
 
-    ctx.save();
-    ctx.beginPath();
-    roundRect(ctx, x, y, CELL_W, CELL_H, 4);
-    ctx.clip();
-    const cssFilter = FILTER_CSS[filterStyle];
-    if (cssFilter !== "none") ctx.filter = cssFilter;
-    ctx.drawImage(photoImg, sx, sy, sw, sh, x, y, CELL_W, CELL_H);
-    ctx.filter = "none";
-    ctx.restore();
+        const x = offsetX;
+        const y = PADDING_Y + i * (CELL_H + GAP_Y);
+
+        const photoImg = await loadImage(displayPhotos[photoIndex]);
+        const { sx, sy, sw, sh } = coverFit(
+          photoImg.naturalWidth,
+          photoImg.naturalHeight,
+          CELL_W,
+          CELL_H,
+        );
+
+        ctx.save();
+        ctx.beginPath();
+        roundRect(ctx, x, y, CELL_W, CELL_H, 4);
+        ctx.clip();
+        const cssFilter = FILTER_CSS[filterStyle];
+        if (cssFilter !== "none") ctx.filter = cssFilter;
+        ctx.drawImage(photoImg, sx, sy, sw, sh, x, y, CELL_W, CELL_H);
+        ctx.filter = "none";
+        ctx.restore();
+      }
+    }
+  } else {
+    for (let i = 0; i < displayPhotos.length; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = PADDING_X + col * (CELL_W + PADDING_X);
+      const y = PADDING_Y + row * (CELL_H + PADDING_Y);
+
+      const photoImg = await loadImage(displayPhotos[i]);
+      const { sx, sy, sw, sh } = coverFit(
+        photoImg.naturalWidth,
+        photoImg.naturalHeight,
+        CELL_W,
+        CELL_H,
+      );
+
+      ctx.save();
+      ctx.beginPath();
+      roundRect(ctx, x, y, CELL_W, CELL_H, 4);
+      ctx.clip();
+      const cssFilter = FILTER_CSS[filterStyle];
+      if (cssFilter !== "none") ctx.filter = cssFilter;
+      ctx.drawImage(photoImg, sx, sy, sw, sh, x, y, CELL_W, CELL_H);
+      ctx.filter = "none";
+      ctx.restore();
+    }
   }
 
-  // ── Footer (all frame styles, drawn last so nothing covers it) ──
-  const footerY = STRIP_H - FOOTER_H;
-  const QR_SIZE = 44;
-
-  // For non-pastel frames, draw the frame overlay before the footer
+  // ── Frame overlay (non-pastel) ──
   if (frameStyle !== "pastel" && framePath) {
     try {
       const frameImg = await loadImage(framePath);
@@ -169,28 +235,40 @@ export async function compositePhotoStrip(
     }
   }
 
-  // Footer background
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, footerY, STRIP_W, FOOTER_H);
+  // ── Footer ──
+  const QR_SIZE = 84;
 
-  // Brand text
-  ctx.fillStyle = "#1a1a2e";
-  ctx.font = 'bold 15px "Georgia", serif';
-  ctx.textAlign = "left";
-  ctx.fillText("BINS FOUR CATS", PADDING, footerY + FOOTER_H / 2 + 5);
+  if (isDuplex) {
+    if (shareUrl) {
+      try {
+        const qrCanvas = await generateQRCanvas(shareUrl, QR_SIZE);
+        ctx.drawImage(qrCanvas, 1095, 1707, QR_SIZE, QR_SIZE);
+      } catch {
+        console.warn("QR generation failed");
+      }
+    }
+  } else {
+    const footerY = STRIP_H - FOOTER_H;
 
-  // QR code
-  if (shareUrl) {
-    try {
-      const qrCanvas = await generateQRCanvas(shareUrl, QR_SIZE);
-      const qrX = STRIP_W - QR_SIZE - PADDING;
-      const qrY = footerY + (FOOTER_H - QR_SIZE) / 2;
-      ctx.drawImage(qrCanvas, qrX, qrY, QR_SIZE, QR_SIZE);
-    } catch {
-      console.warn("QR generation failed");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, footerY, STRIP_W, FOOTER_H);
+
+    ctx.fillStyle = "#1a1a2e";
+    ctx.font = 'bold 15px "Georgia", serif';
+    ctx.textAlign = "left";
+    ctx.fillText("BINS FOUR CATS", PADDING_X, footerY + FOOTER_H / 2 + 5);
+
+    if (shareUrl) {
+      try {
+        const qrCanvas = await generateQRCanvas(shareUrl, QR_SIZE);
+        const qrX = STRIP_W - QR_SIZE - PADDING_X;
+        const qrY = footerY + (FOOTER_H - QR_SIZE) / 2;
+        ctx.drawImage(qrCanvas, qrX, qrY, QR_SIZE, QR_SIZE);
+      } catch {
+        console.warn("QR generation failed");
+      }
     }
   }
-
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
