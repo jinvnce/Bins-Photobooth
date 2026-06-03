@@ -242,7 +242,7 @@ body {
   background: #000;
   aspect-ratio: 4/3;   /* wide and short — change to 16/9 for taller */
   border: 1.5px solid rgba(74, 143, 255, 0.25);
-  width: 100%;
+  width: 50%;
   max-width: 100%;       
   box-shadow:
     0 0 0 1px rgba(74,143,255,0.08),
